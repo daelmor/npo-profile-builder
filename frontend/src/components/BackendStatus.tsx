@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { getHealth } from '../api/client'
+import { getHealth } from '@/api/client'
+import { cn } from '@/lib/utils'
 
 type State = 'checking' | 'ok' | 'down'
 
@@ -29,8 +30,8 @@ export default function BackendStatus() {
   }, [])
 
   return (
-    <span className="inline-flex items-center gap-2 text-sm text-slate-500">
-      <span className={`h-2 w-2 rounded-full ${DOT[state]}`} />
+    <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+      <span className={cn('size-2 rounded-full', DOT[state])} />
       {LABEL[state]}
     </span>
   )

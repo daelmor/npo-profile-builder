@@ -1,23 +1,28 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import { ArrowLeft, Loader2, Send } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
-import { getConversation, sendChatMessage, startConversation } from '../api/client'
-import type { ChatMessage, Completeness, NonprofitProfile, TrackedField } from '../api/types'
-import FieldRow from '../components/FieldRow'
-import { FIELD_LABELS, PROFILE_SECTIONS } from '../lib/profileFields'
+import { getConversation, sendChatMessage, startConversation } from '@/api/client'
+import type { ChatMessage, Completeness, NonprofitProfile, TrackedField } from '@/api/types'
+import FieldRow from '@/components/FieldRow'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { FIELD_LABELS, PROFILE_SECTIONS } from '@/lib/profileFields'
+import { cn } from '@/lib/utils'
 
 function CompletenessMeter({ c }: { c: Completeness }) {
   const filled = c.total - c.missing
   const pct = c.total ? Math.round((filled / c.total) * 100) : 0
   return (
     <div className="space-y-1">
-      <div className="flex justify-between text-xs text-slate-500">
+      <div className="flex justify-between text-xs text-muted-foreground">
         <span>
           {filled}/{c.total} fields filled
         </span>
         <span>{pct}%</span>
       </div>
-      <div className="h-1.5 w-full rounded-full bg-slate-100">
+      <div className="h-1.5 w-full rounded-full bg-muted">
         <div className="h-1.5 rounded-full bg-emerald-500 transition-all" style={{ width: `${pct}%` }} />
       </div>
     </div>
@@ -89,65 +94,63 @@ export default function ChatPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">Fill the gaps</h1>
         {profileId && (
-          <Link to={`/profiles/${profileId}`} className="text-sm text-slate-500 hover:text-slate-900">
-            ← Back to profile
-          </Link>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to={`/profiles/${profileId}`}>
+              <ArrowLeft /> Back to profile
+            </Link>
+          </Button>
         )}
       </div>
 
-      {error && (
-        <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700 ring-1 ring-rose-600/20">
-          {error}
-        </p>
-      )}
+      {error && <p className="text-destructive">{error}</p>}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         {/* Conversation */}
-        <div className="flex h-[34rem] flex-col rounded-xl border border-slate-200 bg-white">
+        <Card className="flex h-[34rem] flex-col overflow-hidden">
           <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-4">
             {messages.map((m, i) => (
               <div key={i} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
                 <div
-                  className={
+                  className={cn(
+                    'max-w-[80%] rounded-2xl px-3 py-2 text-sm',
                     m.role === 'user'
-                      ? 'max-w-[80%] rounded-2xl bg-slate-900 px-3 py-2 text-sm text-white'
-                      : 'max-w-[80%] rounded-2xl bg-slate-100 px-3 py-2 text-sm text-slate-800'
-                  }
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-foreground',
+                  )}
                 >
                   {m.text}
                 </div>
               </div>
             ))}
-            {busy && <div className="text-xs text-slate-400">…</div>}
+            {busy && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="size-3 animate-spin" /> thinking…
+              </div>
+            )}
           </div>
-          <form onSubmit={handleSubmit} className="flex gap-2 border-t border-slate-200 p-3">
-            <input
+          <form onSubmit={handleSubmit} className="flex gap-2 border-t p-3">
+            <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your answer…"
-              className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-slate-900 focus:ring-0"
             />
-            <button
-              type="submit"
-              disabled={busy || !input.trim()}
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-40"
-            >
-              Send
-            </button>
+            <Button type="submit" size="icon" disabled={busy || !input.trim()}>
+              <Send />
+            </Button>
           </form>
-        </div>
+        </Card>
 
         {/* Live profile */}
-        <div className="flex h-[34rem] flex-col rounded-xl border border-slate-200 bg-white">
-          <div className="border-b border-slate-100 p-4">
-            <h2 className="mb-2 text-sm font-semibold text-slate-500">Live profile</h2>
+        <Card className="flex h-[34rem] flex-col overflow-hidden">
+          <div className="border-b p-4">
+            <h2 className="mb-2 text-sm font-semibold text-muted-foreground">Live profile</h2>
             {completeness && <CompletenessMeter c={completeness} />}
           </div>
           <div className="flex-1 overflow-y-auto px-4">
             {profile &&
               PROFILE_SECTIONS.map((section) => (
                 <div key={section.title} className="py-3">
-                  <h3 className="mb-1 text-xs font-semibold tracking-wide text-slate-400 uppercase">
+                  <h3 className="mb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                     {section.title}
                   </h3>
                   {section.fields.map((key) => (
@@ -160,7 +163,7 @@ export default function ChatPage() {
                 </div>
               ))}
           </div>
-        </div>
+        </Card>
       </div>
     </section>
   )

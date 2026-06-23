@@ -1,32 +1,28 @@
 import { useState } from 'react'
-import type { FormEvent } from 'react'
+import { FileText, Loader2, Upload } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { ingestFile, ingestText } from '../api/client'
-import BackendStatus from '../components/BackendStatus'
-
-type Mode = 'text' | 'file'
+import { ingestFile, ingestText } from '@/api/client'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Textarea } from '@/components/ui/textarea'
 
 export default function UploadPage() {
   const navigate = useNavigate()
-  const [mode, setMode] = useState<Mode>('text')
   const [text, setText] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const canSubmit = mode === 'text' ? text.trim().length > 0 : file !== null
-
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    if (!canSubmit) return
+  async function run(kind: 'text' | 'file') {
     setBusy(true)
     setError(null)
     try {
-      const detail =
-        mode === 'text' ? await ingestText(text) : await ingestFile(file as File)
+      const detail = kind === 'text' ? await ingestText(text) : await ingestFile(file as File)
       navigate(`/profiles/${detail.id}`)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ingestion failed.')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Ingestion failed.')
     } finally {
       setBusy(false)
     }
@@ -34,69 +30,74 @@ export default function UploadPage() {
 
   return (
     <section className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Build a profile</h1>
-          <p className="mt-1 max-w-prose text-slate-600">
-            Upload a PDF or paste text. The pipeline extracts a structured nonprofit profile and
-            tracks the provenance of every field.
-          </p>
-        </div>
-        <BackendStatus />
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">New profile</h1>
+        <p className="mt-1 max-w-prose text-muted-foreground">
+          Upload a PDF or paste text. The pipeline extracts a structured nonprofit profile and
+          tracks the provenance of every field.
+        </p>
       </div>
 
-      <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1 text-sm">
-        {(['text', 'file'] as Mode[]).map((m) => (
-          <button
-            key={m}
-            type="button"
-            onClick={() => setMode(m)}
-            className={
-              mode === m
-                ? 'rounded-md bg-slate-900 px-3 py-1.5 font-medium text-white'
-                : 'rounded-md px-3 py-1.5 text-slate-600 hover:text-slate-900'
-            }
-          >
-            {m === 'text' ? 'Paste text' : 'Upload PDF'}
-          </button>
-        ))}
-      </div>
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {mode === 'text' ? (
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={12}
-            placeholder="Paste a nonprofit's about page, annual report text, grant narrative…"
-            className="w-full rounded-lg border border-slate-300 p-3 font-mono text-sm shadow-sm focus:border-slate-900 focus:ring-0"
-          />
-        ) : (
-          <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-white p-10 text-slate-500 hover:border-slate-400">
-            <input
-              type="file"
-              accept="application/pdf,.pdf"
-              className="hidden"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            />
-            <span className="text-sm">{file ? file.name : 'Choose a PDF…'}</span>
-          </label>
-        )}
+      <Card>
+        <CardHeader>
+          <CardTitle>Ingest a document</CardTitle>
+          <CardDescription>Choose how you'd like to provide the source material.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="text">
+            <TabsList className="w-full">
+              <TabsTrigger value="text">Paste text</TabsTrigger>
+              <TabsTrigger value="file">Upload PDF</TabsTrigger>
+            </TabsList>
 
-        {error && (
-          <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-700 ring-1 ring-rose-600/20">
-            {error}
-          </p>
-        )}
+            <TabsContent value="text" className="space-y-4 pt-4">
+              <Textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Paste a nonprofit's about page, annual report text, grant narrative…"
+                className="min-h-64 font-mono text-xs"
+              />
+              <Button onClick={() => run('text')} disabled={busy || !text.trim()}>
+                {busy ? (
+                  <>
+                    <Loader2 className="animate-spin" /> Extracting…
+                  </>
+                ) : (
+                  'Extract profile'
+                )}
+              </Button>
+            </TabsContent>
 
-        <button
-          type="submit"
-          disabled={!canSubmit || busy}
-          className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {busy ? 'Extracting…' : 'Extract profile'}
-        </button>
-      </form>
+            <TabsContent value="file" className="space-y-4 pt-4">
+              <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed py-12 text-sm text-muted-foreground transition-colors hover:bg-muted/50">
+                <input
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  className="hidden"
+                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                />
+                {file ? <FileText className="size-5" /> : <Upload className="size-5" />}
+                {file ? file.name : 'Choose a PDF…'}
+              </label>
+              <Button onClick={() => run('file')} disabled={busy || !file}>
+                {busy ? (
+                  <>
+                    <Loader2 className="animate-spin" /> Extracting…
+                  </>
+                ) : (
+                  'Extract profile'
+                )}
+              </Button>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     </section>
   )
 }
