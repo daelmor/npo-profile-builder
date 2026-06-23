@@ -1,6 +1,11 @@
 // Typed fetch client mirroring the backend API.
 
-import type { ProfileDetail, ProfileSummary } from './types'
+import type {
+  ChatResponse,
+  ConversationState,
+  ProfileDetail,
+  ProfileSummary,
+} from './types'
 
 const BASE = '/api'
 
@@ -61,3 +66,11 @@ export const ingestFile = (file: File) => {
 export const getProfile = (id: string) => apiGet<ProfileDetail>(`/profiles/${id}`)
 
 export const listProfiles = () => apiGet<ProfileSummary[]>('/profiles')
+
+export const getConversation = (id: string) => apiGet<ConversationState>(`/chat/${id}`)
+
+export const startConversation = (id: string) =>
+  apiPostJson<ChatResponse>(`/chat/${id}/start`, {})
+
+export const sendChatMessage = (id: string, message: string) =>
+  apiPostJson<ChatResponse>(`/chat/${id}/messages`, { message })

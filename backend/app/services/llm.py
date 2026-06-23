@@ -31,7 +31,7 @@ something null than to guess. Be conservative with confidence on inferred values
 """
 
 
-def _ensure_provider_env() -> None:
+def ensure_provider_env() -> None:
     """Bridge configured secrets into the env vars provider SDKs read.
 
     pydantic-settings loads keys from .env into `settings`; the Anthropic SDK
@@ -45,7 +45,7 @@ def _ensure_provider_env() -> None:
 @lru_cache
 def extraction_agent() -> Agent[None, NonprofitProfile]:
     """Agent that turns source text into a validated NonprofitProfile."""
-    _ensure_provider_env()
+    ensure_provider_env()
     return Agent(
         settings.llm_model,
         output_type=NonprofitProfile,
