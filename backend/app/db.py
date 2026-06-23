@@ -7,7 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from app.config import settings
 
 # Creating the engine does not open a connection; that happens lazily on first use.
-engine = create_async_engine(settings.database_url, future=True, pool_pre_ping=True)
+_connect_args = {"ssl": "require"} if settings.db_require_ssl else {}
+engine = create_async_engine(
+    settings.database_url,
+    future=True,
+    pool_pre_ping=True,
+    connect_args=_connect_args,
+)
 SessionLocal = async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 
