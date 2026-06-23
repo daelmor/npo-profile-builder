@@ -73,3 +73,30 @@ export interface ProfileSummary {
   completeness: Completeness
   created_at: string
 }
+
+// --- Chat / gap-finding agent ---
+
+export interface ChatMessage {
+  role: 'user' | 'assistant'
+  text: string
+}
+
+export interface AgentReply {
+  message: string
+  asked_fields: string[]
+  complete: boolean
+}
+
+export interface ConversationState {
+  started: boolean
+  transcript: ChatMessage[]
+  profile: NonprofitProfile
+  completeness: Completeness
+}
+
+export interface ChatResponse {
+  reply: AgentReply
+  transcript: ChatMessage[]
+  profile: NonprofitProfile
+  completeness: Completeness
+}
