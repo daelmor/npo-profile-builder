@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router-dom'
 import { getConversation, sendChatMessage, startConversation } from '@/api/client'
 import type { ChatMessage, Completeness, NonprofitProfile, TrackedField } from '@/api/types'
 import FieldRow from '@/components/FieldRow'
+import Markdown from '@/components/Markdown'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -118,7 +119,7 @@ export default function ChatPage() {
                       : 'bg-muted text-foreground',
                   )}
                 >
-                  {m.text}
+                  {m.role === 'assistant' ? <Markdown>{m.text}</Markdown> : m.text}
                 </div>
               </div>
             ))}
