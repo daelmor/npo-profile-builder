@@ -6,6 +6,7 @@ to chunks -> persist document + chunks + profile.
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Iterable
 from dataclasses import dataclass
 
@@ -18,6 +19,7 @@ from app.core.errors import IngestionError, LLMError
 from app.models.profile import Profile, SourceChunk, SourceDocument
 from app.schemas.profile import NonprofitProfile
 from app.services.chunking import chunk_text
+from app.services.embeddings import embed_texts
 from app.services.llm import extraction_agent
 
 
@@ -74,8 +76,11 @@ async def ingest(
         raw_text=text,
         char_count=len(text),
     )
-    for index, chunk in enumerate(chunk_text(text)):
-        document.chunks.append(SourceChunk(chunk_index=index, text=chunk))
+    chunks = chunk_text(text)
+    # Embed chunks now so they're searchable (Slice 3). Run off the event loop.
+    vectors = await asyncio.to_thread(embed_texts, chunks)
+    for index, (chunk, vector) in enumerate(zip(chunks, vectors, strict=True)):
+        document.chunks.append(SourceChunk(chunk_index=index, text=chunk, embedding=vector))
 
     session.add(document)
     await session.flush()  # assigns document.id and chunk ids
