@@ -37,6 +37,8 @@ class Settings(BaseSettings):
 
     # --- Database ---
     database_url: str = "postgresql+asyncpg://npo:npo@localhost:5432/npo"
+    # Azure Database for PostgreSQL requires TLS; enable in the deployed env.
+    db_require_ssl: bool = False
 
     # --- App ---
     cors_origins: str = "http://localhost:5173"

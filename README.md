@@ -167,6 +167,38 @@ uv run pytest        # no DB or API key required (LLM is mocked)
 
 ---
 
+## Deployment (Azure)
+
+Deployed as a single container on **Azure App Service for Containers**, backed by
+**Azure Database for PostgreSQL Flexible Server** (managed, persistent, pgvector),
+with the image in **Azure Container Registry**. The image is multi-stage — it builds
+the SPA, then FastAPI serves both `/api` and the static SPA on one origin. The
+embedding model is baked into the image so cold starts don't re-download it, and the
+container runs `alembic upgrade head` on start.
+
+**Resources** (resource group `npo-profile-builder`):
+
+| Resource | Name | Notes |
+|---|---|---|
+| Container registry | `npoprofilebuilderacr` | Basic; image `npo-profile-builder` |
+| PostgreSQL Flexible Server | `npo-profile-builder-pg` | Burstable B1ms, 32 GB; `vector` extension allowlisted; TLS required |
+| App Service plan | `npo-profile-builder-plan` | Linux B1 |
+| Web app | `npo-profile-builder-api` | container; `WEBSITES_PORT=8000` |
+
+Config (`DATABASE_URL`, `ANTHROPIC_API_KEY`, `DB_REQUIRE_SSL=true`, model/embedding
+settings) lives in App Service application settings.
+
+**CI/CD** (`.github/workflows/deploy.yml`): on push to `main`, GitHub Actions
+authenticates to Azure via **OIDC** (federated credential — no stored secret), builds
+the image with `az acr build` (cloud build, no Docker on the runner), and points the
+web app at the new image tag. Required GitHub secrets: `AZURE_CLIENT_ID`,
+`AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`.
+
+> The Postgres server is in `centralus` because this subscription restricts Flexible
+> Server in `eastus`; its DNS name is region-independent, so nothing else changes.
+
+---
+
 ## What I'd build next
 
 - **Auth & multi-tenancy** — org/user accounts; profiles scoped per tenant.
@@ -180,4 +212,3 @@ uv run pytest        # no DB or API key required (LLM is mocked)
   reranking pass, and move embedding/ingestion to background jobs for large docs.
 - **Evals** — a small graded set for extraction accuracy and agent question
   quality, wired into CI.
-```

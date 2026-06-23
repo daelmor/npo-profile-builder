@@ -1,0 +1,55 @@
+name: Deploy to Azure
+
+# Builds the container in ACR (cloud build — no Docker needed on the runner) and
+# points the App Service web app at the new image. Auth is GitHub OIDC against an
+# Azure AD app with Contributor on the resource group (no long-lived secret).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RESOURCE_GROUP: npo-profile-builder
+  ACR_NAME: npoprofilebuilderacr
+  IMAGE: npo-profile-builder
+  WEBAPP: npo-profile-builder-api
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build & push image in ACR
+        run: |
+          az acr build \
+            --registry "$ACR_NAME" \
+            --image "$IMAGE:${{ github.sha }}" \
+            --image "$IMAGE:latest" \
+            --file Dockerfile .
+
+      - name: Point the web app at the new image
+        run: |
+          az webapp config container set \
+            --resource-group "$RESOURCE_GROUP" \
+            --name "$WEBAPP" \
+            --container-image-name "$ACR_NAME.azurecr.io/$IMAGE:${{ github.sha }}"
+          az webapp restart --resource-group "$RESOURCE_GROUP" --name "$WEBAPP"
