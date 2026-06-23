@@ -5,6 +5,7 @@ import type {
   ConversationState,
   ProfileDetail,
   ProfileSummary,
+  SearchResponse,
 } from './types'
 
 const BASE = '/api'
@@ -74,3 +75,6 @@ export const startConversation = (id: string) =>
 
 export const sendChatMessage = (id: string, message: string) =>
   apiPostJson<ChatResponse>(`/chat/${id}/messages`, { message })
+
+export const searchProfiles = (q: string, limit = 5) =>
+  apiGet<SearchResponse>(`/search?q=${encodeURIComponent(q)}&limit=${limit}`)
