@@ -1,0 +1,16 @@
+# Keep the build context small and secret-free.
+**/.venv
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+frontend/node_modules
+frontend/dist
+.git
+.github
+.env
+.env.*
+!.env.example
+.test-profiles/
+claude_code_prompt.md
