@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# uv
+# (uv.lock IS committed; the virtualenv is not)
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Node / frontend
+node_modules/
+frontend/dist/
+*.local
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# The AI build prompt / spec — kept local, not part of project history.
+claude_code_prompt.md
+
+# Local model / data caches
+.fastembed_cache/
+*.log
