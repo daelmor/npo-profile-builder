@@ -2,8 +2,10 @@
 
 from fastapi import APIRouter
 
-from app.api import health
+from app.api import health, ingest, profile
 
 api_router = APIRouter()
 api_router.include_router(health.router)
-# Slice 1: ingest, profile  |  Slice 2: chat  |  Slice 3: search
+api_router.include_router(ingest.router)
+api_router.include_router(profile.router)
+# Slice 2: chat  |  Slice 3: search
