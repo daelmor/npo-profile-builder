@@ -100,3 +100,27 @@ export interface ChatResponse {
   profile: NonprofitProfile
   completeness: Completeness
 }
+
+// --- RAG search ---
+
+export interface SearchEvidence {
+  chunk_id: number
+  document_id: string
+  text: string
+  score: number
+}
+
+export interface SearchResult {
+  profile_id: string
+  legal_name: string | null
+  country: string | null
+  cause_areas: string[]
+  mission: string | null
+  score: number
+  evidence: SearchEvidence
+}
+
+export interface SearchResponse {
+  query: string
+  results: SearchResult[]
+}

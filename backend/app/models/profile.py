@@ -11,10 +11,12 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.config import settings
 from app.models.base import Base
 
 
@@ -45,8 +47,9 @@ class SourceChunk(Base):
     )
     chunk_index: Mapped[int] = mapped_column(Integer)
     text: Mapped[str] = mapped_column(Text)
+    # pgvector embedding for RAG (Slice 3); null until the chunk is embedded.
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(settings.embedding_dim))
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    # NOTE: a pgvector `embedding` column is added in Slice 3 (RAG).
 
     document: Mapped[SourceDocument] = relationship(back_populates="chunks")
 
