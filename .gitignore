@@ -29,8 +29,12 @@ Thumbs.db
 # The AI build prompt / spec — kept local, not part of project history.
 claude_code_prompt.md
 
-# Local test fixtures (PDFs etc.) — not committed to the portfolio repo.
+# Local test fixtures and bulk data dumps — not committed to the portfolio repo.
 .test-profiles/
+.example-data/
+
+# Claude Code local settings (per-machine)
+.claude/settings.local.json
 
 # Local model / data caches
 .fastembed_cache/
