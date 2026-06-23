@@ -1,5 +1,6 @@
-// Typed fetch client mirroring the backend API. Per-slice helpers are added
-// alongside their endpoints; this module holds the shared plumbing.
+// Typed fetch client mirroring the backend API.
+
+import type { ProfileDetail, ProfileSummary } from './types'
 
 const BASE = '/api'
 
@@ -27,8 +28,36 @@ async function handle<T>(resp: Response): Promise<T> {
   return resp.json() as Promise<T>
 }
 
-export async function apiGet<T>(path: string): Promise<T> {
+async function apiGet<T>(path: string): Promise<T> {
   return handle<T>(await fetch(`${BASE}${path}`))
 }
 
+async function apiPostJson<T>(path: string, body: unknown): Promise<T> {
+  return handle<T>(
+    await fetch(`${BASE}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }),
+  )
+}
+
+async function apiUpload<T>(path: string, form: FormData): Promise<T> {
+  // No explicit Content-Type — the browser sets the multipart boundary.
+  return handle<T>(await fetch(`${BASE}${path}`, { method: 'POST', body: form }))
+}
+
 export const getHealth = () => apiGet<{ status: string }>('/health')
+
+export const ingestText = (text: string, title?: string) =>
+  apiPostJson<ProfileDetail>('/ingest/text', { text, title: title ?? null })
+
+export const ingestFile = (file: File) => {
+  const form = new FormData()
+  form.append('file', file)
+  return apiUpload<ProfileDetail>('/ingest/file', form)
+}
+
+export const getProfile = (id: string) => apiGet<ProfileDetail>(`/profiles/${id}`)
+
+export const listProfiles = () => apiGet<ProfileSummary[]>('/profiles')

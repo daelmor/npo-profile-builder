@@ -29,6 +29,9 @@ Thumbs.db
 # The AI build prompt / spec — kept local, not part of project history.
 claude_code_prompt.md
 
+# Local test fixtures (PDFs etc.) — not committed to the portfolio repo.
+.test-profiles/
+
 # Local model / data caches
 .fastembed_cache/
 *.log
