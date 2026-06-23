@@ -13,6 +13,32 @@ own.
 
 ---
 
+## A look at it
+
+The four core screens — ingest a document, review the structured profile, fill
+the gaps by chatting, then browse and search everything.
+
+**1 · Ingest** — upload a PDF or paste text; the pipeline extracts a structured profile.
+
+![New profile — upload a PDF or paste text to start extraction](docs/screenshots/01-new-profile.png)
+
+**2 · Review with provenance** — every field shows its status (extracted / inferred /
+user-provided / missing), a confidence score, and the source quote it came from.
+
+![Profile review — per-field status badges, confidence, and source quotes](docs/screenshots/02-profile-review.png)
+
+**3 · Fill the gaps** — a PydanticAI agent asks only about missing or low-confidence
+fields; answers stream back into the profile (watch the "You provided" badges appear).
+
+![Fill the gaps — the gap-finding chat agent updating the profile live](docs/screenshots/03-fill-the-gaps.png)
+
+**4 · Browse & search** — every ingested nonprofit at a glance, searchable by meaning
+via pgvector RAG (here, 100 real orgs imported from ProPublica across 14 countries).
+
+![Profiles gallery — cards with cause area and field-completeness](docs/screenshots/04-profiles.png)
+
+---
+
 ## Architecture
 
 Three stages, one datastore. The profile schema — with provenance on every
