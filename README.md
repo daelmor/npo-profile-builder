@@ -8,8 +8,13 @@ searchable via RAG. It's built end-to-end on the target platform's stack —
 demonstrate that stack hands-on, in three vertical slices that each work on their
 own.
 
-> Status: a real, runnable MVP (not a mockup). Everything runs locally with
-> Docker after you add an API key.
+> **🔗 Try it live:** **[npo-profile-builder-api.azurewebsites.net](https://npo-profile-builder-api.azurewebsites.net)**
+> — a shared demo on Azure (API docs at [`/docs`](https://npo-profile-builder-api.azurewebsites.net/docs)).
+> It's already seeded with 100 real nonprofits, so you can search right away. The
+> first request may take a few seconds while the container wakes up.
+
+> Status: a real, runnable MVP (not a mockup). The live demo above runs the exact
+> same container; everything also runs locally with Docker after you add an API key.
 
 ---
 
@@ -195,6 +200,7 @@ uv run pytest        # no DB or API key required (LLM is mocked)
 
 ## Deployment (Azure)
 
+**Live at [npo-profile-builder-api.azurewebsites.net](https://npo-profile-builder-api.azurewebsites.net).**
 Deployed as a single container on **Azure App Service for Containers**, backed by
 **Azure Database for PostgreSQL Flexible Server** (managed, persistent, pgvector),
 with the image in **Azure Container Registry**. The image is multi-stage — it builds
